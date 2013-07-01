@@ -314,6 +314,11 @@
 */
 - (NSUInteger)uidNext;
 
+/*
+ returns the private attribute connected.
+ */
+-(BOOL)isConnected;
+
 /* Intended for advanced use only */
 - (struct mailfolder *)folderStruct;
 - (mailsession *)folderSession;

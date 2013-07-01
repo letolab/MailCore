@@ -41,9 +41,11 @@
     CTMIME_SinglePart *mMIMEPart;
     NSString *mFilename;
     NSString *mContentType;
+    NSString *mContentId;
 }
 @property(retain) NSString *filename;
 @property(retain) NSString *contentType;
+@property(retain) NSString *contentId;
 @property(readonly) CTMIME_SinglePart *part;
 
 -(NSString*)decodedFilename;
@@ -58,4 +60,9 @@
  Also has a progress handler
 */
 - (CTCoreAttachment *)fetchFullAttachmentWithProgress:(CTProgressBlock)block;
+
+/*
+ Fetch the attachment Size
+ */
+-(size_t)fetchFileSize;
 @end

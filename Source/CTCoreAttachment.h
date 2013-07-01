@@ -52,8 +52,9 @@
  @param data The actual attachment data
  @param contentType The MIME content type you'd like to use
  @param filename The filename you'd like the attachment to be given in the e-mail message
-*/
+ */
 - (id)initWithData:(NSData *)data contentType:(NSString *)contentType filename:(NSString *)filename;
+- (id)initWithData:(NSData *)data contentType:(NSString *)contentType filename:(NSString *)filename contentId:(NSString *)contentId;
 
 /**
  Used to save the attachment locally

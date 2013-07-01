@@ -105,6 +105,8 @@
         return NO;
     }
     connected = YES;
+//    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CONNECT TO SERVER %@", login);
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"account_connect" object:self];
     return YES;
 }
 
@@ -144,6 +146,8 @@
 }
 
 - (void)disconnect {
+//    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DISCONNECT TO SERVER ");
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"account_disconnect" object:self];
     if (connected) {
         connected = NO;
         mailstorage_disconnect(myStorage);

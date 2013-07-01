@@ -94,20 +94,26 @@ static const int MAX_PATH_SIZE = 1024;
     }
 }
 
-
 - (BOOL)connect {
     int err = MAIL_NO_ERROR;
     err =  mailfolder_connect(myFolder);
     if (err != MAILIMAP_NO_ERROR) {
         self.lastError = MailCoreCreateErrorFromIMAPCode(err);
+//        NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FAILED CONNECT TO FOLDER  %@ %@", self.path, self.lastError.localizedDescription);
         return NO;
     }
     connected = YES;
+//    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CONNECT TO FOLDER %@ %@", self.path, self.lastError.localizedDescription);
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"folder_connect" object:self];
+    if (self.lastError.localizedDescription != NULL) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"Error" object:self userInfo:@{@"error":self.lastError}];
+    }
     return YES;
 }
 
 
 - (void)disconnect {
+//    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DISCONNECT FROM FOLDER %@", self.path);
     if (connected)
         mailfolder_disconnect(myFolder);
 }
@@ -469,7 +475,34 @@ static const int MAX_PATH_SIZE = 1024;
         self.lastError = MailCoreCreateErrorFromIMAPCode(r);
         return nil;
     }
-
+    
+    // Always fetch body.peek[0]
+//    struct mailimap_section * section;
+//    int res;
+//    struct mailimap_section_spec * spec;
+//    struct mailimap_section_msgtext * msgtext;
+//    
+//    msgtext = mailimap_section_msgtext_new(MAILIMAP_SECTION_MSGTEXT_TEXT,
+//                                           NULL);
+//    spec = mailimap_section_spec_new(MAILIMAP_SECTION_SPEC_SECTION_MSGTEXT,
+//                                     msgtext, NULL, NULL);
+//    if (spec == NULL)
+//        return NULL;
+//    
+//    section = mailimap_section_new(spec);if (section == NULL) {
+//        res = MAIL_ERROR_MEMORY;
+//        return nil;
+//    }
+//
+//    fetch_att = mailimap_fetch_att_new_body_peek_section(section);
+//    r = mailimap_fetch_type_new_fetch_att_list_add(fetch_type, fetch_att);
+//    if (r != MAILIMAP_NO_ERROR) {
+//        mailimap_fetch_att_free(fetch_att);
+//        mailimap_fetch_type_free(fetch_type);
+//        self.lastError = MailCoreCreateErrorFromIMAPCode(r);
+//        return nil;
+//    }
+    
     // We only fetch RFC822.Size if the envelope is being fetched
     if (attrs & CTFetchAttrEnvelope) {
         fetch_att = mailimap_fetch_att_new_rfc822_size();
@@ -882,8 +915,6 @@ static const int MAX_PATH_SIZE = 1024;
     *totalCount =  [self imapSession]->imap_selection_info->sel_exists;
     return YES;
 }
-
-
 - (mailsession *)folderSession; {
     return myFolder->fld_session;
 }
@@ -988,5 +1019,8 @@ int uid_list_to_env_list(clist * fetch_result, struct mailmessage_list ** result
         return res;
 }
 
+-(BOOL)isConnected{
+    return self->connected;
+}
 
 @end
