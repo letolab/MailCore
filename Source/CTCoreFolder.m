@@ -78,7 +78,7 @@ static const int MAX_PATH_SIZE = 1024;
         [self disconnect];
 
     mailfolder_free(myFolder);
-    [myAccount release];
+//    [myAccount release];
     [myPath release];
     self.lastError = nil;
     [super dealloc];
@@ -103,7 +103,7 @@ static const int MAX_PATH_SIZE = 1024;
         return NO;
     }
     connected = YES;
-//    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CONNECT TO FOLDER %@ %@", self.path, self.lastError.localizedDescription);
+    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CONNECT TO FOLDER %@", self.path);
     [[NSNotificationCenter defaultCenter] postNotificationName:@"folder_connect" object:self];
     if (self.lastError.localizedDescription != NULL) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"Error" object:self userInfo:@{@"error":self.lastError}];
@@ -113,9 +113,12 @@ static const int MAX_PATH_SIZE = 1024;
 
 
 - (void)disconnect {
-//    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DISCONNECT FROM FOLDER %@", self.path);
+
+    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DISCONNECT FROM FOLDER %@", self.path);
     if (connected)
         mailfolder_disconnect(myFolder);
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"folder_disconnect" object:self];
+
 }
 
 - (NSError *)lastError {
@@ -926,6 +929,7 @@ static const int MAX_PATH_SIZE = 1024;
     mailsession *session;
 
     session = [self folderSession];
+    NSAssert((session != NULL), @"Session Can't be null");
     if (strcasecmp(session->sess_driver->sess_name, "imap-cached") == 0) {
         cached_data = session->sess_data;
         session = cached_data->imap_ancestor;
@@ -934,6 +938,62 @@ static const int MAX_PATH_SIZE = 1024;
     data = session->sess_data;
     return data->imap_session;
 }
+
+- (BOOL)getUnreadMessageCount:(NSUInteger *)unreadCount totalMessageCount:(NSUInteger *)totalCount uidvalidity:(NSUInteger *)validity uidNext:(NSUInteger *)uidNext{
+   /*
+    Connect
+    */
+    BOOL success = [self connect];
+    if (!success) {
+        return NO;
+    }
+    
+    
+    /*
+     Unseen
+     */
+    
+    uint32_t unseenCount = 0;
+    unsigned int junk = 0;
+    int err = mailfolder_status(myFolder, &junk, &junk, &unseenCount);
+    if (err != MAIL_NO_ERROR) {
+        self.lastError = MailCoreCreateErrorFromIMAPCode(err);
+        return NO;
+    }
+    
+    struct mailimap *imap = [self imapSession];
+    
+    if (unreadCount) {
+        *unreadCount = unseenCount;
+    }
+    
+    
+    /*
+     Total
+     */
+     
+    if (totalCount) {
+        *totalCount = imap->imap_selection_info->sel_exists;
+    }
+    
+    
+    /*
+     Validity
+     */
+    if (imap->imap_selection_info != NULL) {
+        *validity = imap->imap_selection_info->sel_uidvalidity;
+    }
+    
+    /*
+     Next
+     */
+    if (imap->imap_selection_info != NULL) {
+        *uidNext = imap->imap_selection_info->sel_uidnext;
+    }
+    
+    return YES;
+}
+
 
 /* From Libetpan source */
 //TODO Can these things be made public in libetpan?

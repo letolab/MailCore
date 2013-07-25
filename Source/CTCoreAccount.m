@@ -72,6 +72,8 @@
 - (BOOL)connectToServer:(NSString *)server port:(int)port
         connectionType:(int)conType authType:(int)authType
         login:(NSString *)login password:(NSString *)password {
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SetActivity"object:self userInfo:@{@"Title":@"Connecting to account"}];
+
     int err = 0;
     int imap_cached = 0;
 
@@ -146,6 +148,8 @@
 }
 
 - (void)disconnect {
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SetActivity"object:self userInfo:@{@"Title":@"Disconnecting from account"}];
+
 //    NSLog(@">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DISCONNECT TO SERVER ");
     [[NSNotificationCenter defaultCenter] postNotificationName:@"account_disconnect" object:self];
     if (connected) {

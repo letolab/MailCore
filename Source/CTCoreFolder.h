@@ -319,6 +319,13 @@
  */
 -(BOOL)isConnected;
 
+
+/*
+ Get All folder vars
+ */
+
+- (BOOL)getUnreadMessageCount:(NSUInteger *)unreadCount totalMessageCount:(NSUInteger *)totalCount uidvalidity:(NSUInteger *)validity uidNext:(NSUInteger *)uidNext;
+
 /* Intended for advanced use only */
 - (struct mailfolder *)folderStruct;
 - (mailsession *)folderSession;
